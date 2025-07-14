@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Digitale Auftragsverwaltung für Deutschland, Österreich und die Schweiz">
+    <meta name="keywords" content="Auftragsverwaltung, AMP, Monteure, Umsatz">
+    <meta name="author" content="AuftragsManager Pro">
+    <title>AMP - AuftragsManager Pro</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Basis-CSS für Responsive Design */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f6f9;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 1rem;
+            margin: 0;
+            padding: 0;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            padding: 2rem;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            text-align: center;
+        }
+        .card h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        .card p {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 600px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>AMP - AuftragsManager Pro</h1>
+        <nav>
+            <ul>
+                <li><a href="#dashboard" aria-label="Zum Dashboard navigieren">Dashboard</a></li>
+                <li><a href="#auftraege" aria-label="Zu meinen Aufträgen navigieren">Meine Aufträge</a></li>
+                <li><a href="#admin" aria-label="Zum Admin Dashboard navigieren">Admin</a></li>
+                <li><a href="#erinnerungen" aria-label="Zu den Erinnerungseinstellungen navigieren">Erinnerungen</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Willkommen Dashboard -->
+        <section id="dashboard" class="dashboard" aria-labelledby="dashboard-heading">
+            <h2 id="dashboard-heading">Willkommen</h2>
+            <div class="card" role="region" aria-label="Offene Aufträge">
+                <h3>Offene Aufträge</h3>
+                <p id="offene-auftraege">12</p>
+            </div>
+            <div class="card" role="region" aria-label="Heute erledigt">
+                <h3>Heute erledigt</h3>
+                <p id="heute-erledigt">5</p>
+            </div>
+            <div class="card" role="region" aria-label="Tagesumsatz">
+                <h3>Tagesumsatz</h3>
+                <p id="tagesumsatz">€2,450</p>
+            </div>
+            <div class="card" role="region" aria-label="Bewertung">
+                <h3>Bewertung</h3>
+                <p id="bewertung">4.8</p>
+            </div>
+        </section>
+
+        <!-- Admin Dashboard -->
+        <section id="admin" class="dashboard" aria-labelledby="admin-heading">
+            <h2 id="admin-heading">Admin Dashboard</h2>
+            <div class="card" role="region" aria-label="Wartende Genehmigungen">
+                <h3>Wartende Genehmigungen</h3>
+                <p id="wartende-genehmigungen">3</p>
+            </div>
+            <div class="card" role="region" aria-label="Aktive Monteure">
+                <h3>Aktive Monteure</h3>
+                <p id="aktive-monteure">12</p>
+            </div>
+            <div class="card" role="region" aria-label="Heute erstellt">
+                <h3>Heute erstellt</h3>
+                <p id="heute-erstellt">8</p>
+            </div>
+            <div class="card" role="region" aria-label="Gesamtumsatz">
+                <h3>Gesamtumsatz</h3>
+                <p id="gesamtumsatz">€4,250</p>
+            </div>
+        </section>
+
+        <!-- Erinnerungseinstellungen -->
+        <section id="erinnerungen" aria-labelledby="erinnerungen-heading">
+            <h2 id="erinnerungen-heading">Erinnerungseinstellungen</h2>
+            <div class="card">
+                <h3>Tägliche Umsatzerinnerung</h3>
+                <div class="loader" id="loader" aria-live="polite" aria-label="Daten werden geladen"></div>
+                <button onclick="sendToN8N()" aria-label="Umsatzerinnerung an n8n senden">An n8n/Telegram senden</button>
+            </div>
+        </section>
+
+        <!-- Integration mit n8n/Telegram/Google Sheets -->
+        <section id="integration" aria-labelledby="integration-heading">
+            <h2 id="integration-heading">Integration mit Telegram & Google Sheets</h2>
+            <form id="n8n-form" onsubmit="submitToN8N(event)">
+                <label for="auftrag-id">Auftrags-ID:</label>
+                <input type="text" id="auftrag-id" name="auftrag-id" required aria-required="true">
+                <label for="status">Status:</label>
+                <input type="text" id="status" name="status" required aria-required="true">
+                <label for="betrag">Betrag (€):</label>
+                <input type="number" id="betrag" name="betrag" required aria-required="true">
+                <button type="submit" aria-label="Auftrag an n8n und Google Sheets senden">Auftrag speichern</button>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        // Dynamische Daten laden (Platzhalter für API)
+        async function loadData() {
+            try {
+                // Beispiel: Daten von einer API abrufen
+                const response = await fetch('https://api.auftragsmanagerpro.com/auftraege', {
+                    headers: { 'Authorization': 'Bearer dein-api-schluessel' }
+                });
+                const data = await response.json();
+                document.getElementById('offene-auftraege').textContent = data.offeneAuftraege || 12;
+                document.getElementById('tagesumsatz').textContent = `€${data.tagesumsatz || 2450}`;
+                document.getElementById('loader').style.display = 'none';
+            } catch (error) {
+                console.error('Fehler beim Laden der Daten:', error);
+                document.getElementById('loader').textContent = 'Fehler beim Laden';
+            }
+        }
+
+        // Daten an n8n senden (z. B. für Telegram/Google Sheets)
+        async function submitToN8N(event) {
+            event.preventDefault();
+            const formData = {
+                auftragId: document.getElementById('auftrag-id').value,
+                status: document.getElementById('status').value,
+                betrag: document.getElementById('betrag').value
+            };
+            try {
+                const response = await fetch('https://your-n8n-domain.com/webhook/auftrag', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                if (response.ok) {
+                    alert('Auftrag erfolgreich an n8n gesendet!');
+                }
+            } catch (error) {
+                console.error('Fehler beim Senden an n8n:', error);
+                alert('Fehler beim Senden');
+            }
+        }
+
+        // Initiale Daten laden
+        window.onload = loadData;
+    </script>
+</body>
+</html>
